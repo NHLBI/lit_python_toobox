@@ -1,5 +1,20 @@
 # coil-sketching-4D
 
+---
+## Notice
+
+This is the pre-release version. The code is currently dirty, but in a working state. Thank you for your patience. A clean version will be submitted with publication of the paper.
+
+Todo:
+1. Provide a sample 4D dataset (currently pending, will be uploaded soon)
+2. Release clean version of the code 
+3. Release test scripts
+4. Link to paper once DOI released
+
+---
+
+
+
 **4D MRI Reconstruction via Coil Sketching**  
 **Author:** Joseph Plummer
 
