@@ -1,0 +1,22 @@
+name: coil-sketching-4d
+channels:
+  - nvidia/label/cuda-12.4.1
+  - conda-forge
+
+dependencies:
+  - python>=3.9
+  - matplotlib
+  - numpy # Sigpy recently got updated to 2.0... this might need to be updated
+  - cuda-toolkit
+  - cupy
+  - cudnn
+  - nccl
+  - pip
+  - pip:
+    - nibabel
+    - matplotlib
+    - jupyter    
+    - pynvml
+    - torch
+    - antspyx
+    - nibabel
