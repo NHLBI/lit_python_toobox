@@ -1,3 +1,21 @@
+"""utils.py
+
+    This module provides utility functions for MRI data processing, including coil compression, image cropping, montage creation, and error calculation.
+    Functions:
+    ----------
+    coil_compression(ksp, percentile=None)
+        Performs coil compression on k-space data, supporting both CPU and GPU arrays. Optionally reports the number of coils containing a specified percentile of total energy and visualizes energy contributions before and after compression.
+    crop_center(img, target_shape)
+        Crops a 4D MRI image (x, y, z, N) from the center to a specified target shape (target_x, target_y, target_z, N).
+    crop_2d(img, target_shape)
+        Crops a 2D MRI image (x, y) from the center to a specified target shape (target_x, target_y).
+    create_montage(input, slices=None, cmap='gray', percentile=None, vmin=0, vmax=1)
+        Creates a 2D montage from a 3D array (N_pixel x N_pixel x N_slice), stacking selected slices horizontally for visualization.
+    nrmse(image1, image2, mask=None, norm='range')
+        Calculates the Normalized Root Mean Squared Error (NRMSE) between two images, with optional masking and normalization strategies ('range', 'mean', 'std').
+"""
+
+
 import numpy as np
 import sigpy as sp
 import sys
