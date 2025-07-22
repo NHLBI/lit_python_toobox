@@ -88,7 +88,7 @@ class MaxEig(App):
         plt.grid(True)
         plt.show()
         
-        # Force override
+        # Force override # TODO: remove this if you want to use the curve fit
         scale_factor = 1.1
         print(f"Despite attempting a fit, we are just assuming that {scale_factor}x the {len(eigvals)}th eigen value is our max.")
         estimated_value_X = eigvals[-1]*scale_factor
