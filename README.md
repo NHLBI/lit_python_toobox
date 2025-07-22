@@ -3,7 +3,7 @@
 ---
 ## Notice
 
-This is the pre-release version. The code is currently dirty, but in a working state. Thank you for your patience. A clean version will be submitted with publication of the paper.
+This is the pre-release version. The code is currently dirty, but in a working state. Thank you for your patience. A clean version will be submitted very shortly.
 
 Todo:
 1. Provide a sample 4D dataset (currently pending, will be uploaded soon)
@@ -35,6 +35,8 @@ mamba activate coil-sketching-4d
 make pip
 ```
 
+> ⚠️ **Note:** We recommend installing via mamba instead of conda, as it has faster performance when handling Cuda-related packages. Feel free to replace all instances of `mamba` with `conda` inside the Makefile if you would prefer to use conda.
+
 ### Troubleshooting
 
 This repository was developed and tested on systems with NVIDIA GPUs. If you are installing on a CPU-only system or one without CUDA support, remove the following GPU-specific dependencies from `environment.yaml`:
@@ -50,10 +52,10 @@ This repository was developed and tested on systems with NVIDIA GPUs. If you are
 If you intend to modify or extend the code, please work from a new development branch:
 
 ```bash
-git checkout -b my-feature-branch
+git checkout -b author-name-dev
 ```
 
-Pull requests and issue submissions are encouraged.
+Issue submissions and changes are encouraged.
 
 ---
 
