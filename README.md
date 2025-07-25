@@ -5,11 +5,14 @@
 ## Notice
 
 This is the pre-release version. The code is currently dirty, but in a working state. Thank you for your patience. A clean version will be submitted very shortly.
+---
+## 🚧 **TODO**
 
-Todo:
-1. Provide a sample 4D dataset (currently pending, will be uploaded soon)
-2. Release clean version of the code 
-3. Release test scripts
+> **This section highlights upcoming tasks and planned improvements for this repository.**
+
+1. ~~Provide a sample 4D dataset (currently pending, will be uploaded soon)~~
+2. ~~Release clean version of the code~~
+3. ~~Release test scripts~~
 4. Link to paper once DOI released
 
 ---
