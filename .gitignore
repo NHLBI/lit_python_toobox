@@ -1,2 +1,11 @@
 # Do not save *.npy files
 *.npy
+
+# Pycache files
+__pycache__/
+*.pyc
+
+# Images
+*.nii
+*.nii.gz
+*.png

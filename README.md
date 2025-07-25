@@ -47,6 +47,12 @@ This repository was developed and tested on systems with NVIDIA GPUs. If you are
 
 ---
 
+## Data download
+
+To download the sample data, please run the `download_data.py` script. Alternatively, you can manually download the data files from: [https://zenodo.org/records/15802530](https://zenodo.org/records/15802530). Please store them inside the `data/` directory if you download the data manually.
+
+---
+
 ## Development Workflow
 
 If you intend to modify or extend the code, please work from a new development branch:

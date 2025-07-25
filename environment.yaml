@@ -6,7 +6,7 @@ channels:
 dependencies:
   - python>=3.9
   - matplotlib
-  - numpy # Sigpy recently got updated to 2.0... this might need to be updated
+  - numpy
   - cuda-toolkit
   - cupy
   - cudnn
