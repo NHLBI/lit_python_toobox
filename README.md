@@ -1,11 +1,15 @@
 # coil-sketching-4D
 
 ![Coil Sketching 4D MRI Reconstruction](fig3-highres.png)
+
 ---
+
 ## Notice
 
 This is the pre-release version. The code is currently dirty, but in a working state. Thank you for your patience. A clean version will be submitted very shortly.
+
 ---
+
 ## 🚧 **TODO**
 
 > **This section highlights upcoming tasks and planned improvements for this repository.**

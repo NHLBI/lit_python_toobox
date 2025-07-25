@@ -902,8 +902,8 @@ class RegisterImagesWithJacobian(Linop):
             M = sp.linop.Identity(self.ishape)
             
         # (OPTIONAL) plot adjoint test
-        MHM_input = ApplyDeformation(self.ishape, sp.to_device(-self.deformation_fields, self.devnum)) * M(input)
-        pl.ImagePlot(MHM_input - input, x=1, y=2, z=0, colormap="jet", title=f"{self.counter}: (GHG - I): NEGATIVE. mean = {cp.mean(abs(MHM_input - input))}", vmin=-1, vmax=1) # x component of deformation fields 
+        # MHM_input = ApplyDeformation(self.ishape, sp.to_device(-self.deformation_fields, self.devnum)) * M(input)
+        # pl.ImagePlot(MHM_input - input, x=1, y=2, z=0, colormap="jet", title=f"{self.counter}: (GHG - I): NEGATIVE. mean = {cp.mean(abs(MHM_input - input))}", vmin=-1, vmax=1) # x component of deformation fields 
          
         # Update counter
         self.counter += 1

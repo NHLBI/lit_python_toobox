@@ -2,7 +2,7 @@ import time
 from pynvml import nvmlInit, nvmlDeviceGetMemoryInfo, nvmlDeviceGetHandleByIndex, nvmlShutdown, nvmlDeviceGetUtilizationRates
 import threading
 
-def monitor_gpu_memory(gpu_index=6, interval=0.1):
+def monitor_gpu_memory(gpu_index=0, interval=0.1):
     """
     Monitors GPU memory usage every `interval` seconds between tic and toc.
     
@@ -15,16 +15,10 @@ def monitor_gpu_memory(gpu_index=6, interval=0.1):
     """
     # Initialize NVIDIA Management Library
     nvmlInit()
-    
-    # Fix Aruba GPU offset between the read-in GPU and actual GPU ID
-    # if gpu_index == 3: # Assume we only do this on Aruba
-    #     gpu_index = 4
-    # elif gpu_index == 4: 
+            
+    # Sometimes, the GPU index being read might be mismatched from the expected GPU index being requested, for example:
+    # if gpu_index == 5: 
     #     gpu_index = 2
-        
-    # Fix Indonesia GPU offset between the read-in GPU and actual GPU ID
-    if gpu_index == 6: # Assume we only do this on Indonesia
-        gpu_index = 6
     
     # Get handle for the specified GPU
     handle = nvmlDeviceGetHandleByIndex(gpu_index)

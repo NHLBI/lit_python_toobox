@@ -1,18 +1,18 @@
 # -*- coding: utf-8 -*-
 """
-Coil Sketching
-by Julio A. Oscanoa (joscanoa@stanford.edu), 2023.
+Coil Sketching 4D reconstruction functions:
+
+Originally written by Julio A. Oscanoa (joscanoa@stanford.edu), 2023.
+Extended to 4D by Joseph Plummer (jplummer@stanford.edu), 2025.
 
 This module contains MR iterative reconstruction apps for iterative sketching
-based reconstruction. Apps include general Coil Sketching and more specific
-L1 and L2 regularized reconstructions.
+based reconstruction. 
 """
 import numpy as np
 import time
 
 
 from sketching_app import SketchedLinearLeastSquares
-# from builtins import None
 import sigpy as sp
 from sigpy.mri import linop
 from sigpy.mri.app import _estimate_weights
@@ -34,8 +34,7 @@ import os
 class CoilSketching(SketchedLinearLeastSquares):
 
     def __init__(self, y, mps, reduced_ncoils, b0_map=None, moco=False, number_non_sketched_coils=None, 
-                 solver=None, 
-                 number_non_sketched_coils_init=None, sketch_type='Rademacher',
+                 solver=None,  sketch_type='Rademacher',
                  weights=None, coord=None, coil_batch_size=None, sketch_arrays=None,
                  device=sp.cpu_device, sketch_sigma=None, img_shape=None, 
                  toeplitz=False, **kwargs):
@@ -153,11 +152,6 @@ class CoilSketching(SketchedLinearLeastSquares):
                     plt.title("Log-Scaled Toeplitz PSF")
                     plt.savefig(folder + "/toeplitz/psf.png", dpi=300)
                     plt.show()
-                    
-                # print("Computing the Toeplitz Normal linear operator using the measured PSF...")
-                # T = custom_linop.Toeplitz_Normal(mps, coord, self.psf) 
-                # print("Toeplitz operator computed. Clearing variables to save space.")
-                # del coord, weights
                 
                 # Move the psf back to original device
                 self.psf = backend.to_device(self.psf, self.device)
@@ -337,7 +331,7 @@ class CoilSketching(SketchedLinearLeastSquares):
                 self.mps_S = np.array(self.mps[:,:self.reduced_ncoils, ...], dtype=self.y.dtype)
                 
             self.A_S = custom_linop.Sense4D(self.mps_S, coord=self.coord, weights=self.weights, device=self.device, b0_map=self.b0_map, coil_batch_size=self.coil_batch_size) # Switched from before mps_S--if bugged, move back
-            # self.y_S = sp.to_device(self.y[:,:self.reduced_ncoils,...], device=self.device) # First dimension is resp phase in the 4D problem # TODO: do not declare this to try and reduce memory load - may cause issues later on
+            # self.y_S = sp.to_device(self.y[:,:self.reduced_ncoils,...], device=self.device) # First dimension is resp phase in the 4D problem # TODO: do not declare this to try and reduce memory load - see option 1/2 in sketching_app.py
             
             if self.toeplitz:
                 print("Computing the Toeplitz Normal linear operator using the measured PSF...")
@@ -499,54 +493,6 @@ class CoilSketching(SketchedLinearLeastSquares):
         print(f"**** MAX EIGENVALUE OF A CALCULATED AS {self.max_eig_A} ****")        
         return
 
-class SketchedL1WaveletRecon(CoilSketching):
-    r"""L1 Wavelet regularized reconstruction.
-
-    Solves the following problem efficiently using Coil Sketching:
-
-    .. math::
-        \min_x \frac{1}{2} \| P F S x - y \|_2^2 + \lambda \| W x \|_1
-
-    where P is the sampling operator, F is the Fourier transform operator,
-    S is the SENSE operator, W is the wavelet operator,
-    x is the image, and y is the k-space measurements.
-
-    Args:
-        y (array): k-space measurements.
-        mps (array): sensitivity maps.
-        lamda (float): regularization parameter.
-        weights (float or array): weights for data consistency.
-        coord (None or array): coordinates.
-        wave_name (str): wavelet name.
-        device (Device): device to perform reconstruction.
-        coil_batch_size (int): batch size to process coils.
-        Only affects memory usage.
-        comm (Communicator): communicator for distributed computing.
-        **kwargs: Other optional arguments.
-
-    References:
-        Lustig, M., Donoho, D., & Pauly, J. M. (2007).
-        Sparse MRI: The application of compressed sensing for rapid MR imaging.
-        Magnetic Resonance in Medicine, 58(6), 1082-1195.
-
-    """
-
-    def __init__(self, y, mps, lamda, reduced_ncoils,
-                 wave_name='db4', **kwargs):
-
-        img_shape = mps.shape[1:]
-        W = sp.linop.Wavelet(img_shape, wave_name=wave_name)
-        proxg = sp.prox.UnitaryTransform(sp.prox.L1Reg(W.oshape, lamda), W)
-
-        def g(input):
-            device = sp.get_device(input)
-            xp = device.xp
-            with device:
-                return lamda * xp.sum(xp.abs(W(input))).item()
-
-        super().__init__(y, mps, reduced_ncoils, proxg=proxg, g=g,
-                                        img_shape=img_shape, **kwargs)
-        
         
 class SketchedL1WaveletRecon4D(CoilSketching):
     r"""L1 Wavelet regularized reconstruction.
@@ -602,59 +548,6 @@ class SketchedL1WaveletRecon4D(CoilSketching):
         super().__init__(y, mps, reduced_ncoils, proxg=proxg, g=g,
                                         img_shape=img_shape, **kwargs)
 
-
-class SketchedTotalVariationRecon(CoilSketching):
-    r"""Total variation regularized reconstruction.
-
-    Solves the following problem efficiently using Coil Sketching:
-
-    .. math::
-        \min_x \frac{1}{2} \| P F S x - y \|_2^2 + \lambda \| G x \|_1
-
-    where P is the sampling operator, F is the Fourier transform operator,
-    S is the SENSE operator, G is the gradient operator,
-    x is the image, and y is the k-space measurements.
-
-    Args:
-        y (array): k-space measurements.
-        mps (array): sensitivity maps.
-        lamda (float): regularization parameter.
-        weights (float or array): weights for data consistency.
-        coord (None or array): coordinates.
-        device (Device): device to perform reconstruction.
-        coil_batch_size (int): batch size to process coils.
-        Only affects memory usage.
-        comm (Communicator): communicator for distributed computing.
-        **kwargs: Other optional arguments.
-
-    References:
-        Block, K. T., Uecker, M., & Frahm, J. (2007).
-        Undersampled radial MRI with multiple coils.
-        Iterative image reconstruction using a total variation constraint.
-        Magnetic Resonance in Medicine, 57(6), 1086-1098.
-
-    """
-
-    def __init__(self, y, mps, lamda, reduced_ncoils,
-                 **kwargs):
-
-        if len(mps.shape) == 4: # 3D, no respiratory frame
-            img_shape = (mps.shape[1:])
-        else: # 4D
-            print(f'y.shape = {y.shape}')
-            ndim = 3 # Force 3D respiratory resolved images for now
-            img_shape = (y.shape[0],) + (mps.shape[-ndim:])
-        G = sp.linop.FiniteDifference(img_shape, axes=(0,))
-        proxg = sp.prox.L1Reg(G.oshape, lamda)
-
-        def g(x):
-            device = sp.get_device(x)
-            xp = device.xp
-            with device:
-                return lamda * xp.sum(xp.abs(x)).item()
-
-        super().__init__(y, mps, reduced_ncoils, proxg=proxg, g=g, G=G,
-                                                img_shape=img_shape, **kwargs)
         
 def SpatioTemporalFiniteDifference(ishape, axes=None, scales=None):
         """Linear operator that computes scaled finite difference gradient.
@@ -964,104 +857,6 @@ class SketchedLocallyLowRankRecon4D(CoilSketching):
                                                 img_shape=img_shape, **kwargs)
 
 
-class SketchedLowRankRecon4D_MODIFIED(CoilSketching):
-    r"""Low Rank regularized reconstruction.
-
-    Solves the following problem efficiently using Coil Sketching:
-
-    .. math::
-        \min_x \frac{1}{2} \| P F S x - y \|_2^2 + \lambda \| M x \|_*
-
-    where P is the sampling operator, F is the Fourier transform operator,
-    S is the SENSE operator, M is the motion field operator,
-    x is the image, and y is the k-space measurements.
-
-    Args:
-        y (array): k-space measurements.
-        mps (array): sensitivity maps.
-        lamda (float): regularization parameter.
-        weights (float or array): weights for data consistency.
-        coord (None or array): coordinates.
-        device (Device): device to perform reconstruction.
-        coil_batch_size (int): batch size to process coils.
-        Only affects memory usage.
-        comm (Communicator): communicator for distributed computing.
-        **kwargs: Other optional arguments.
-
-    References:
-        Block, K. T., Uecker, M., & Frahm, J. (2007).
-        Undersampled radial MRI with multiple coils.
-        Iterative image reconstruction using a total variation constraint.
-        Magnetic Resonance in Medicine, 57(6), 1086-1098.
-
-    """
-
-    def __init__(self, y, mps, lamda, reduced_ncoils, moco=True, ref_index=0, solver=None,
-                 **kwargs):
-
-        ndim = 3 # force 3D images for now
-        if len(y.shape) == 3: # 3D, no respiratory frame
-            img_shape = (mps.shape[-ndim:])
-        else: # 4D
-            img_shape = (y.shape[0],) + (mps.shape[-ndim:])
-            
-        # Registration inputs
-        self.moco = moco
-        self.ref_index = ref_index
-        self.filter_size = 9 # TODO
-        self.devnum = 0 # TODO: this is only for the registration, should set it to use the same device as main code
-        
-        
-        if solver == 'GradientMethod':
-            print("Using Gradient method to solve the reconstruction problem.")
-            if moco: # TODO: redefine inside of gradient method alg
-                M = sp.linop.Identity(img_shape) # Temp fix for here, might not even be needed.
-                # M = custom_linop.MotionFieldsUnitary(img_shape, deformation_fields=None)
-                # print("Initialize iteration... assuming zero deformation here")
-                # NOTE: This option requires deformation fields as an input. These are updated every outer iteration inside the Gradient Method alg.
-                proxg = prox_lr.GLRA(shape = img_shape, 
-                                lamda = lamda, 
-                                plot=False, 
-                                img_shape_for_plot=img_shape,
-                                prox_moco=True)
-                print("Regularizing the motion compensated images.")
-            else:
-                M = sp.linop.Identity(img_shape) # Use axes argument to regularize over a custom dimension, default = all.
-                proxg = prox_lr.GLRA(shape = img_shape, 
-                                lamda = lamda, 
-                                plot=False, 
-                                img_shape_for_plot=img_shape,
-                                prox_moco=False)
-                print("Not regularizing the motion compensated images.")
-            G = None # Goes down the gradient method path, and computes G inside of proxg and g(x)
-                                    
-        elif solver == "PrimalDualHybridGradient":
-            print("Using PDHG to solve the reconstruction problem.")
-            if moco:
-                M = custom_linop.RegisterImages(img_shape, ref_index)
-                print("Regularizing the motion compensated images.")
-                # NOTE: This option remeasures the forward motion fields every time it is called (i.e. every iteration). It is not unitary, hence PDHG must be used (as it only calls the forward operator).
-            else:
-                M = sp.linop.Identity(img_shape) # Use axes argument to regularize over a custom dimension, default = all.
-                print("Not regularizing the motion compensated images.")
-            G = M # Goes down PDHG path, but warning--this may be slower, and require more iterations if g(x) is nonconvex and nonsmooth
-            proxg = prox_lr.GLRA(shape = img_shape, 
-                                lamda = lamda, plot=False, img_shape_for_plot=img_shape, prox_moco=False)
-
-        def g(x):
-            device = sp.get_device(x)
-            xp = device.xp
-            with device:
-                # x = np.reshape((x.shape[0], -1))
-                print(f'x.shape inside g(x) = {x.shape}')
-                x = np.reshape(x, img_shape)
-                u,s,vh = np.linalg.svd(M(x),full_matrices=False)
-                return lamda * xp.sum(xp.abs(s)).item()
-
-        super().__init__(y, mps, reduced_ncoils, proxg=proxg, g=g, G=G, moco=moco,
-                                                img_shape=img_shape, **kwargs)
-
-
 
 class SketchedSenseRecon(CoilSketching):
     r"""SENSE Reconstruction.
@@ -1123,7 +918,7 @@ class SketchedSenseRecon(CoilSketching):
                 xp = device.xp
                 with device:
                     return lamda * xp.linalg.norm(input, ord='2').item()
-        elif solver == "GradientMethod": # <-- works! Turns out I was accidentally using this path for a while as solver was not passed to super()
+        elif solver == "GradientMethod": 
             print(f"Using {solver} to solve the reconstruction problem.")
             G = None
             proxg = sp.prox.L2Reg(img_shape, lamda)
@@ -1149,143 +944,3 @@ class SketchedSenseRecon(CoilSketching):
                                         solver=solver,
                                         img_shape=img_shape, **kwargs)
         
-class CGSenseRecon(CoilSketching):
-    r"""SENSE Reconstruction.
-
-    Solves the following problem efficiently using Coil Sketching:
-
-    .. math::
-        \min_x \frac{1}{2} \| P F S x - y \|_2^2 +
-        \frac{\lambda}{2} \| x \|_2^2
-
-    where P is the sampling operator, F is the Fourier transform operator,
-    S is the SENSE operator, x is the image, and y is the k-space measurements.
-
-    Args:
-        y (array): k-space measurements.
-        mps (array): sensitivity maps.
-        lamda (float): regularization parameter.
-        weights (float or array): weights for data consistency.
-        tseg (None or Dictionary): parameters for time-segmented off-resonance
-            correction. Parameters are 'b0' (array), 'dt' (float),
-            'lseg' (int), and 'n_bins' (int). Lseg is the number of
-            time segments used, and n_bins is the number of histogram bins.
-        coord (None or array): coordinates.
-        device (Device): device to perform reconstruction.
-        coil_batch_size (int): batch size to process coils.
-            Only affects memory usage.
-        comm (Communicator): communicator for distributed computing.
-        **kwargs: Other optional arguments.
-
-    References:
-        Pruessmann, K. P., Weiger, M., Scheidegger, M. B., & Boesiger, P.
-        (1999).
-        SENSE: sensitivity encoding for fast MRI.
-        Magnetic resonance in medicine, 42(5), 952-962.
-
-        Pruessmann, K. P., Weiger, M., Bornert, P., & Boesiger, P. (2001).
-        Advances in sensitivity encoding with arbitrary k-space trajectories.
-        Magnetic resonance in medicine, 46(4), 638-651.
-
-    """
-
-    def __init__(self, y, mps, lamda, reduced_ncoils, solver=None,
-                 **kwargs):
-        
-        ndim = 3 # force 3D images for now
-        if len(y.shape) == 3: # 3D, no respiratory frame
-            img_shape = (mps.shape[-ndim:])
-        else: # 4D
-            img_shape = (y.shape[0],) + (mps.shape[-ndim:])
-        
-        solver = "ConjugateGradient"
-        print(f"Using {solver} to solve the reconstruction problem.")
-        def g(input):
-            device = sp.get_device(input)
-            xp = device.xp
-            with device:
-                return lamda * xp.linalg.norm(input, ord='2').item()
-        G = None
-        proxg = None
-            
-            
-        super().__init__(y, mps, reduced_ncoils, lamda=lamda, g=g, proxg=proxg, G=G,
-                                        solver=solver, 
-                                        img_shape=img_shape, **kwargs)
-
-
-class SketchedLowRankRecon4D_model(CoilSketching):
-    r"""Low Rank regularized reconstruction.
-
-    Solves the following problem efficiently using Coil Sketching:
-
-    .. math::
-        \min_x \frac{1}{2} \| P F S x - y \|_2^2 + \lambda \| M x \|_*
-
-    where P is the sampling operator, F is the Fourier transform operator,
-    S is the SENSE operator, M is the motion field operator,
-    x is the image, and y is the k-space measurements.
-
-    Args:
-        y (array): k-space measurements.
-        b0_map (array): B0 maps.
-        mps (array): sensitivity maps.
-        lamda (float): regularization parameter.
-        weights (float or array): weights for data consistency.
-        coord (None or array): coordinates.
-        device (Device): device to perform reconstruction.
-        coil_batch_size (int): batch size to process coils.
-        Only affects memory usage.
-        comm (Communicator): communicator for distributed computing.
-        **kwargs: Other optional arguments.
-
-    References:
-        Block, K. T., Uecker, M., & Frahm, J. (2007).
-        Undersampled radial MRI with multiple coils.
-        Iterative image reconstruction using a total variation constraint.
-        Magnetic Resonance in Medicine, 57(6), 1086-1098.
-
-    """
-
-    def __init__(self, y,  mps, lamda, reduced_ncoils, moco=True, ref_index=0, solver=None, b0_map=None,
-                 device=sp.cpu_device,
-                 **kwargs):
-
-        ndim = 3 # force 3D images for now
-        if len(y.shape) == 3: # 3D, no respiratory frame
-            img_shape = (mps.shape[-ndim:])
-        else: # 4D
-            img_shape = (y.shape[0],) + (mps.shape[-ndim:])
-        if moco:
-            # M = custom_linop.RegisterImages(img_shape, ref_index, devnum=sp.get_device(y).id) # Match y device
-            M = custom_linop.RegisterImages(img_shape, ref_index, devnum=device.id) # Use predeclared device
-            print("Regularizing the motion compensated images.")
-        else:
-            M = sp.linop.Identity(img_shape) # Use axes argument to regularize over a custom dimension, default = all.
-            print("Not regularizing the motion compensated images.")
-        
-        
-        
-        if solver == 'GradientMethod':
-            G = None # Goes down the gradient method path, and computes G inside of proxg and g(x). This requires M to be unitary, of which RegisterImages is not.
-            print("Using Gradient method to solve the reconstruction problem.")
-            proxg = sp.prox.UnitaryTransform(prox_lr.GLRA(shape = M.oshape, 
-                              lamda = lamda, plot=False, img_shape_for_plot=img_shape), M)
-        elif solver == "PrimalDualHybridGradient":
-            G = M # Goes down PDHG path, but warning--this may be slower, and require more iterations. Must be used if M is non unitary.
-            print("Using PDHG to solve the reconstruction problem.")
-            proxg = prox_lr.GLRA(shape = M.oshape, 
-                              lamda = lamda, plot=False, img_shape_for_plot=img_shape)
-
-        def g(x):
-            device = sp.get_device(x)
-            xp = device.xp
-            with device:
-                # x = np.reshape((x.shape[0], -1))
-                print(f'x.shape inside g(x) = {x.shape}')
-                x = np.reshape(x, img_shape)
-                u,s,vh = np.linalg.svd(M(x),full_matrices=False)
-                return lamda * xp.sum(xp.abs(s)).item()
-
-        super().__init__(y, mps, reduced_ncoils, b0_map=b0_map, proxg=proxg, g=g, G=G, device=device,
-                                                img_shape=img_shape, **kwargs)

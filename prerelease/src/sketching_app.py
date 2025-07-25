@@ -79,6 +79,11 @@ class SketchedLinearLeastSquares(LinearLeastSquares):
         # Optional: compute the max Eigenvalue for A and store it as self.max_eig_A
         # self._compute_max_eigenvalue_A()
         
+        # Optional: Save a temporary update of each iteration
+        self.save_iterates = save_iterates
+        if self.save_iterates:
+            print("Warning: self.save_iterates is set to True, which may consume a lot of memory. Consider setting it to False if you do not need to save each image update.")
+        
         super().__init__(A, y, x=self.x, solver=solver, accelerate=self.accelerate, save_objective_values=save_objective_values, **kwargs)
 
         with self.device:
@@ -511,7 +516,12 @@ class SketchedLinearLeastSquares(LinearLeastSquares):
         self._clear_gpu_memory()
                    
         with self.device:
-            AHy = self.A_S.H(self.y_S) # Adds more memory than just re-using self.AHy, but mathematically more accurate 
+            # Option 1: use self.AHy (all coils) as b --> technically less accurate but may save memory as we can clear self.y_S
+            print("WARNING: using self.AHy inside the GradientMethod call for b, in an attempt to save memory, at potential accuracy hit (or maybe improvement?)") 
+            AHy = self.AHy 
+            
+            # Option 2: use sketched AHy as b --> technically more accurate as we are solving the model for what it expects
+            # AHy = self.A_S.H(self.y_S) # Adds more memory than just re-using self.AHy, but mathematically more accurate 
             
             def gradf(x):
                 with self.device:
@@ -561,9 +571,13 @@ class SketchedLinearLeastSquares(LinearLeastSquares):
         else:
             AHA = self.A_S.N 
         
-        with self.device:
-            AHy = self.A_S.H(self.y_S)
-            print(f'linop: {self.A_S.H}')
+        with self.device:           
+            # Option 1: use self.AHy (all coils) as b --> technically less accurate but may save memory as we can clear self.y_S
+            print("WARNING: using self.AHy inside the CG call for b, in an attempt to save memory, at potential accuracy hit (or maybe improvement?)") 
+            AHy = self.AHy 
+            
+            # Option 2: use sketched AHy as b --> technically more accurate as we are solving the model for what it expects
+            # AHy = self.A_S.H(self.y_S) # Adds more memory than just re-using self.AHy, but mathematically more accurate 
         
         if self.lamda != 0:
             AHA += (self.lamda) * linop.Identity(self.x.shape)
