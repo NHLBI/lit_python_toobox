@@ -1,6 +1,6 @@
 # coil-sketching-4D
 
-![Coil Sketching 4D MRI Reconstruction](fig3.eps)
+![Coil Sketching 4D MRI Reconstruction](fig3-highres.png)
 ---
 ## Notice
 
