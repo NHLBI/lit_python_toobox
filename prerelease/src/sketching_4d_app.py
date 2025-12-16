@@ -349,7 +349,7 @@ class CoilSketching(SketchedLinearLeastSquares):
                         coil_batch_size=coil_batch_size)
             self.AHy = self.A_S.H(sp.to_device(self.y, self.device))
         elif len(self.y.shape) == 4: # Assume 4D         
-            print("USING JOEY'S ATTEMPT AT COIL BATCHING self.y")
+            print("USING MANUAL ATTEMPT AT COIL BATCHING self.y")
             print("WARNING: currently only implemented for 4D mps or combine_csm = True")
 
             num_coil_batches = (self.total_ncoils + self.reduced_ncoils - 1) // self.reduced_ncoils # Note, this slows down recon by coil batching
