@@ -84,6 +84,8 @@ make clean
 
 ---
 
-## Citation and Publication
+## Publication
 
-A manuscript is currently in preparation. A DOI will be provided upon publication.
+Manuscript located here: [https://onlinelibrary.wiley.com/doi/10.1002/mrm.70169](https://onlinelibrary.wiley.com/doi/10.1002/mrm.70169)
+
+J. W. Plummer, P. Daudé, A. Tsakirellis, et al., “ Coil Sketching for Fast and Efficient 4D Lung MRI Reconstruction,” Magnetic Resonance in Medicine (2025): 1–13, [https://doi.org/10.1002/mrm.70169](https://doi.org/10.1002/mrm.70169). 
