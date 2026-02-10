@@ -9,7 +9,7 @@ update:
 pip:
 	pip install ipykernel
 	pip install nibabel
-	pip install git+https://github.com/joeyplum/OpticalFlow3d.git 
+	pip install git+https://github.com/joeyplum/OpticalFlow3d.git@cupy-cuda113 
 	pip install git+https://github.com/mikgroup/sigpy.git@main
 
 clean:
