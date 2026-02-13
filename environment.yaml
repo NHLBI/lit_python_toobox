@@ -1,27 +1,22 @@
 name: coil-sketching-4d
 channels:
+  - nvidia/label/cuda-12.4.1 # Note: modifications may be needed if on a different version of cuda
   - conda-forge
-  - nvidia/label/cuda-11.3.1
 
 dependencies:
-  - python=3.9
-  - numpy
+  - python>=3.9
   - matplotlib
-
-  # Make CUDA 11.3 the environment target
-  - cuda-version=11.3
-  - cuda-toolkit=11.3
-
-  # GPU libs (will resolve compatible builds with cuda-version)
+  - numpy
+  - cuda-toolkit
+  - cupy
   - cudnn
   - nccl
-
-  # CuPy (conda-forge will pick a CUDA-11.3 compatible build when cuda-version is set)
-  - cupy
-
   - pip
   - pip:
-      - nibabel
-      - jupyter
-      - pynvml
-      - antspyx
+    - nibabel
+    - matplotlib
+    - jupyter    
+    - pynvml
+    - torch
+    - antspyx
+    - nibabel
