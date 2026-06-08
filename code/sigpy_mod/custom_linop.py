@@ -9,7 +9,7 @@ from cupyx.scipy.ndimage import gaussian_filter
 import cupy as cp
 
 import gc
-import ants
+# import ants # TODO: remove from code entirely and replace with custom Optical Flow code or mathematical implementations of Jacobian. JWP: 20260608
 
 class NFT(Linop):
     """NFT linear operator.

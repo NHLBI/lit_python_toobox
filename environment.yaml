@@ -1,22 +1,57 @@
 name: coil-sketching-4d
+
 channels:
-  - nvidia/label/cuda-12.4.1 # Note: modifications may be needed if on a different version of cuda
   - conda-forge
+  - nvidia
 
 dependencies:
-  - python>=3.9
-  - matplotlib
-  - numpy
-  - cuda-toolkit
-  - cupy
-  - cudnn
-  - nccl
+  # Core Python
+  - python=3.14
+
+  # Build tools
   - pip
+
+  # Scientific stack
+  - numpy>=2.0
+  - scipy>=1.14
+  - matplotlib
+  - sympy
+  - gfortran
+
+  # Development tools
+  - jupyter
+  - jupyterlab
+
+  # CUDA 13 toolkit + libraries
+  # cudnn removed — sigpy now uses cupyx.scipy.signal instead of cuDNN
+  - cuda-toolkit=13.*
+  - nccl
+
+  # GPU computing — CuPy from conda-forge (NOT the pip wheel).
+  # cudnn pin removed; the conda-forge CuPy build no longer needs it.
+  - cupy>=13.6
+  - cutensor
+  - numba
+  - numba-cuda
+  - cuda-nvcc
+  - cuda-nvrtc
+
+  # PyTorch — conda-forge resolves the correct CUDA-compatible build automatically
+  - pytorch
+  - torchvision
+  - torchaudio
+
+  # Pip packages
   - pip:
-    - nibabel
-    - matplotlib
-    - jupyter    
-    - pynvml
-    - torch
-    - antspyx
-    - nibabel
+      # Medical imaging
+      - nibabel
+
+      # GPU monitoring
+      - nvidia-ml-py
+
+      # Medical image processing
+      # - antspyx
+
+      # Custom repositories
+      - git+https://github.com/joeyplum/OpticalFlow3d.git@master
+      - git+https://github.com/joeyplum/sigpy.git@main # Note, this now uses a custom branch that removes the need for cudnn, and some other cool features added

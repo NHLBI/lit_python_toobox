@@ -8,9 +8,6 @@ update:
 
 pip:
 	pip install ipykernel
-	pip install nibabel
-	pip install git+https://github.com/joeyplum/OpticalFlow3d.git # Optional: connect to a specific branch of the optical flow repositoryby adding @cupy-cuda113 after .git 
-	pip install git+https://github.com/mikgroup/sigpy.git@main
 
 clean:
 	rm -rf __pycache__
